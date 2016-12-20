@@ -30,6 +30,11 @@ contract DSProxy9 is DSProxyInterface
             throw;
         }
     }
+    // uPort compatability
+    // It's not a transaction!! RTF yellow paper
+    function forward_transaction(address t, uint v, bytes c) {
+        forward(t, v, c);
+    }
 }
 
 contract DSProxy9Factory {

@@ -14,6 +14,8 @@
 
 pragma solidity ^0.4.6;
 
+import "./ds-auth/auth.sol";
+
 contract DSProxyInterface {
     function forward(address target, uint eth_value, bytes calldata);
 }

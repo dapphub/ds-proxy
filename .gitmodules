@@ -1,0 +1,3 @@
+[submodule "lib/ds-auth"]
+	path = lib/ds-auth
+	url = https://github.com/nexusdev/ds-auth

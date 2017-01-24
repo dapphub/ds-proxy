@@ -20,7 +20,7 @@ contract DSProxyInterface {
     function forward(address target, uint eth_value, bytes calldata);
 }
 
-contract DSProxy9 is DSProxyInterface
+contract DSProxy8 is DSProxyInterface
                    , DSAuth
 {
     function forward(address target, uint eth_value, bytes calldata)
@@ -30,17 +30,20 @@ contract DSProxy9 is DSProxyInterface
             throw;
         }
     }
-    // uPort compatability
-    // It's not a transaction!! RTF yellow paper
+    // legacy uPort compatability
     function forward_transaction(address t, uint v, bytes c) {
+        forward(t, v, c);
+    }
+    // zeppelin compatability
+    function forwardCall(address t, uint v, bytes c) {
         forward(t, v, c);
     }
 }
 
-contract DSProxy9Factory {
+contract DSProxy8Factory {
     mapping(address=>bool) public isProxy;
-    function build() returns (DSProxy9) {
-        var proxy = new DSProxy9();
+    function build() returns (DSProxy8) {
+        var proxy = new DSProxy8();
         proxy.setOwner(msg.sender);
         isProxy[proxy] = true;
         return proxy;

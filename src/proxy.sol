@@ -14,21 +14,26 @@
 
 pragma solidity ^0.4.6;
 
-import "./ds-auth/auth.sol";
+import "ds-auth/auth.sol";
+
 
 contract DSProxyInterface {
+    event Forwarded(address indexed target, uint value, bytes calldata);
     function forward(address target, uint eth_value, bytes calldata);
+    function forwardCall(address target, uint eth_value, bytes calldata);
+    function forward_transaction(address target, uint eth_value, bytes calldata);
 }
 
 contract DSProxy8 is DSProxyInterface
                    , DSAuth
 {
-    function forward(address target, uint eth_value, bytes calldata)
+    function forward(address target, uint value, bytes calldata)
         auth
     {
         if( !target.call.value(eth_value)(calldata) ) {
             throw;
         }
+        Forwarded(target, eth_value, calldata);
     }
     // legacy uPort compatability
     function forward_transaction(address t, uint v, bytes c) {

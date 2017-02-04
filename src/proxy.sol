@@ -12,27 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.9;
 
 import "ds-auth/auth.sol";
+import "ds-actor/actor.sol";
 
-
-contract DSProxyInterface {
+contract DSIProxy {
     event Forwarded(address indexed target, uint value, bytes calldata);
     function forward(address target, uint eth_value, bytes calldata);
     function forwardCall(address target, uint eth_value, bytes calldata);
     function forward_transaction(address target, uint eth_value, bytes calldata);
 }
 
-contract DSProxy8 is DSProxyInterface
+contract DSProxy8 is DSIProxy
+                   , DSActor
                    , DSAuth
 {
     function forward(address target, uint value, bytes calldata)
         auth
     {
-        if( !target.call.value(eth_value)(calldata) ) {
-            throw;
-        }
+        exec(target, value, calldata);
         Forwarded(target, eth_value, calldata);
     }
     // legacy uPort compatability

@@ -17,11 +17,6 @@
 //NOTES
 //Check that gas is ok to use as a RAW value inside create (may need some masking/casting)
 //Ask if we want Zeppelin and uPort integration compatibility
-//Do we want a DSProxyFactory contract to initialize and return DSProxy? Do we want an event Created() when the factory produces a proxy?
-
-//CONSTRAINTS
-//contract should not expect an endowment in their constructor.
-
 
 pragma solidity ^0.4.9;
 
@@ -29,6 +24,7 @@ import "ds-auth/auth.sol";
 
 contract DSProxyEvents {
 	event Forwarded(address indexed target, uint value, bytes calldata);
+	event Created(address sender, address proxy);
 }
 
 contract DSProxy is DSProxyEvents, DSAuth {
@@ -46,8 +42,8 @@ contract DSProxy is DSProxyEvents, DSAuth {
 		assembly {
 			let pMem := mload(0x40)                 //load free memory pointer
 			calldatacopy(pMem, _code, codeLength)   //copy contract code from calldata to memory
-			target := create(0, pMem, codeLength) //deploy contract
-			jumpi(0x02, izero(target))              //verify address of deployed contract
+			target := create(0, pMem, codeLength)   //deploy contract
+			jumpi(0x02, iszero(target))     		//verify address of deployed contract
 			calldatacopy(pMem, _data, dataLength)   //copy request data from calldata to memory
 			succeeded := delegatecall(gas, target, pMem, dataLength, pMem, 32) //call deployed contract
 			jumpi(0x02, iszero(succeeded))          //throw if delegatecall failed
@@ -56,4 +52,14 @@ contract DSProxy is DSProxyEvents, DSAuth {
 		Forwarded(target, msg.value, _data);        //trigger event log
 		return response;
 	}
+}
+
+contract DSProxyFactory {
+	mapping(address=>bool) public isProxy;
+    function build() returns (DSProxy) {
+        var proxy = new DSProxy();
+        proxy.setAuthority(msg.sender);
+        isProxy[proxy] = true;
+        return proxy;
+    }
 }

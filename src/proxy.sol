@@ -14,19 +14,29 @@
    limitations under the License.
 */
 
+//NOTES
+//Check that gas is ok to use as a RAW value inside create (may need some masking/casting)
+//Ask if we want Zeppelin and uPort integration compatibility
+//Do we want a DSProxyFactory contract to initialize and return DSProxy? Do we want an event Created() when the factory produces a proxy?
+
+//CONSTRAINTS
+//contract should not expect an endowment in their constructor.
+
+
 pragma solidity ^0.4.9;
 
 import "ds-auth/auth.sol";
-import "ds-actor/actor.sol";
-
 
 contract DSProxyEvents {
 	event Forwarded(address indexed target, uint value, bytes calldata);
 }
 
-contract DSProxy is DSProxyEvents DSAuth
-{
-	function execute(bytes _code, bytes _data) auth payable returns (bytes32 response) {
+contract DSProxy is DSProxyEvents, DSAuth {
+	function execute(bytes _code, bytes _data)
+		auth
+		payable
+		returns (bytes32 response)
+	{
 		uint256 codeLength = _code.length;
 		uint256 dataLength = _data.length;
 
@@ -34,20 +44,16 @@ contract DSProxy is DSProxyEvents DSAuth
 		bool succeeded = false;
 		
 		assembly {
-			let pMem := mload(0x40)						//load free memory pointer
-			calldatacopy(pMem, _code, codeLength)		//copy contract code from calldata to memory
-			target := create(gas, pMem, codeLength)		//deploy contract
-			jumpi(0x02, izero(target))					//verify address of deployed contract
-			calldatacopy(pMem, _data, dataLength)		//copy request data from calldata to memory
+			let pMem := mload(0x40)                 //load free memory pointer
+			calldatacopy(pMem, _code, codeLength)   //copy contract code from calldata to memory
+			target := create(0, pMem, codeLength) //deploy contract
+			jumpi(0x02, izero(target))              //verify address of deployed contract
+			calldatacopy(pMem, _data, dataLength)   //copy request data from calldata to memory
 			succeeded := delegatecall(gas, target, pMem, dataLength, pMem, 32) //call deployed contract
-			jumpi(0x02, iszero(succeeded))				//throw if delegatecall failed
-			response := mload(pMem)						//set delegatecall output to response
+			jumpi(0x02, iszero(succeeded))          //throw if delegatecall failed
+			response := mload(pMem)                 //set delegatecall output to response
 		}
-		Forwarded(target, 1, _data);					//trigger event log
+		Forwarded(target, msg.value, _data);        //trigger event log
 		return response;
 	}
 }
-//NOTES
-//Check if solidity needs constructors to be payable when sending wei from create
-//How do we differentiate between the wei value meant to be sent to create and delegatecall?
-//Check that gas is ok to use as a RAW value inside create (martin swende, did some explicit masking/casting)

@@ -26,13 +26,6 @@ contract DSProxyEvents {
 
 contract DSProxy is DSProxyEvents DSAuth
 {
-	address owner;
-
-	//constructor
-	function DSProxy() {
-		setOwner(msg.sender);
-	}
-
 	function execute(bytes _code, bytes _data) auth payable returns (bytes32 response) {
 		uint256 codeLength = _code.length;
 		uint256 dataLength = _data.length;
@@ -41,26 +34,20 @@ contract DSProxy is DSProxyEvents DSAuth
 		bool succeeded = false;
 		
 		assembly {
-			let pMem := mload(0x40) 				//load free memory pointer
-			calldatacopy(pMem, _code, codeLength) 	//copy contract code from calldata to memory
-			target := create(gas, pMem, codeLength) //deploy contract
-			jumpi(0x02, izero(target)) 				//verify address of deployed contract
-			calldatacopy(pMem, _data, dataLength) 	//copy request data from calldata to memory
+			let pMem := mload(0x40)						//load free memory pointer
+			calldatacopy(pMem, _code, codeLength)		//copy contract code from calldata to memory
+			target := create(gas, pMem, codeLength)		//deploy contract
+			jumpi(0x02, izero(target))					//verify address of deployed contract
+			calldatacopy(pMem, _data, dataLength)		//copy request data from calldata to memory
 			succeeded := delegatecall(gas, target, pMem, dataLength, pMem, 32) //call deployed contract
-			jumpi(0x02, iszero(succeeded)) 			//throw if delegatecall failed
-			response := mload(pMem)					//set delegatecall output to response
+			jumpi(0x02, iszero(succeeded))				//throw if delegatecall failed
+			response := mload(pMem)						//set delegatecall output to response
 		}
-		Forwarded(target, 1, _data); 				//trigger event log
+		Forwarded(target, 1, _data);					//trigger event log
 		return response;
 	}
-
-	function setOwner(address newOwner) auth {
-		owner = newOwner;
-	}
 }
-//Check if solidity needs constructors can be payable when sending wei from create
-//	Is then sending our entire msg.value to delegatecall a good idea?
-//Find Out how auth works - canCall() doesnt seem to have an implementation - constructor of auth will set msg.sender (me) as authorized, how do I authorize other people?
-//	Do I need to expose authorization setters?
-// Check that gas is ok to use as a RAW value inside create (martin swende, did some explicit masking/casting)
-//look up and(0,0) is it 0 or 1?
+//NOTES
+//Check if solidity needs constructors to be payable when sending wei from create
+//How do we differentiate between the wei value meant to be sent to create and delegatecall?
+//Check that gas is ok to use as a RAW value inside create (martin swende, did some explicit masking/casting)

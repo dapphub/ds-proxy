@@ -15,8 +15,11 @@
 */
 
 //NOTES
-//Check that gas is ok to use as a RAW value inside create (may need some masking/casting)
-//Ask if we want Zeppelin and uPort integration compatibility
+//Is the proxy contract supposed to re-throw on exception, or report it as "executed"?
+
+//I would like to see a way to forward an arbitrary number of transactions in order.
+//This is important from a UX perspective, so dapp developers can make "all or nothing" transactions which are dependent on each other.
+//function forward_transactions (address[] _destinations, uint[] _values, bytes[] _bytecodes) {}
 
 pragma solidity ^0.4.9;
 
@@ -37,7 +40,7 @@ contract DSProxy is DSAuth, DSNote {
 			let pMem := mload(0x40)                     //load free memory pointer
 			calldatacopy(pMem, _code, codeLength)       //copy contract code from calldata to memory
 			let target := create(0, pMem, codeLength)   //deploy contract
-			jumpi(0x02, iszero(target))     		    //verify address of deployed contract
+			jumpi(0x02, iszero(target))                 //verify address of deployed contract
 			calldatacopy(pMem, _data, dataLength)       //copy request data from calldata to memory
 			let succeeded := delegatecall(gas, target, pMem, dataLength, pMem, 32) //call deployed contract
 			jumpi(0x02, iszero(succeeded))              //throw if delegatecall failed

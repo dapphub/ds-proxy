@@ -14,19 +14,13 @@
    limitations under the License.
 */
 
-//NOTES
-//Is the proxy contract supposed to re-throw on exception, or report it as "executed"?
-
-//I would like to see a way to forward an arbitrary number of transactions in order.
-//This is important from a UX perspective, so dapp developers can make "all or nothing" transactions which are dependent on each other.
-//function forward_transactions (address[] _destinations, uint[] _values, bytes[] _bytecodes) {}
-
 pragma solidity ^0.4.9;
 
 import "ds-auth/auth.sol";
-import "ds-note/note.sol";
+import "Ds-note/note.sol";
 
 contract DSProxy is DSAuth, DSNote {
+	//fallback function
 	function execute(bytes _code, bytes _data)
 		auth
 		note

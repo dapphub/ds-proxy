@@ -29,7 +29,7 @@ contract DSProxy is DSAuth, DSNote {
 		assembly {
 			let target := create(0, add(_code, 0x20), mload(_code))	//deploy contract
 			jumpi(invalidJumpLabel, iszero(extcodesize(target)))    //throw if deployed contract contains code
-			let succeeded := delegatecall(sub(gas, 10000), target, add(_data, 0x20), mload(_data), response, 32) //call deployed contract in current context
+			let succeeded := delegatecall(sub(gas, 4000), target, add(_data, 0x20), mload(_data), response, 32) //call deployed contract in current context
 			jumpi(invalidJumpLabel, iszero(succeeded))              //throw if delegatecall failed
 		}
 		return response;

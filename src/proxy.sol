@@ -44,7 +44,7 @@ contract DSProxyFactory {
     function build() returns (DSProxy) {
         var proxy = new DSProxy();			//create new proxy contract
         Created(msg.sender, proxy);			//trigger Created event
-        proxy.setAuthority(msg.sender);		//set authority of proxy
+        proxy.setAuthority(msg.sender);			//set authority of proxy
         isProxy[proxy] = true;				//log proxys created by this factory
         return proxy;
     }

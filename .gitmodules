@@ -4,9 +4,6 @@
 [submodule "lib/ds-auth"]
 	path = lib/ds-auth
 	url = https://github.com/dapphub/ds-auth
-[submodule "lib/ds-actor"]
-	path = lib/ds-actor
-	url = https://github.com/dapphub/ds-actor
 [submodule "lib/Ds-note"]
 	path = lib/Ds-note
 	url = https://github.com/dapphub/Ds-note

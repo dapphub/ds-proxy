@@ -8,7 +8,7 @@ A user would pass in the bytecode for the contract as well as the calldata for t
 The proxy will create a contract using the bytecode. Then it will delegatecall the function and arguments specified in the calldata.
 Loading in this code is more efficient than jumping to it.
 
-## Several Important Usecases:
+## Several Important Use Cases:
 
 1. Allow actions to be executed through the proxys identity
 This can be very useful for securing complex applications. Because delegatecall retains msg.sender and msg.value properties, internal functions can be set to only accept calls coming from the proxy through an ownership model like ds-auth. In this manner as long as the proxy is not compromised, the internal system is protected from outsider access. Should the owner of the internal calls ever need to be changed, this is as simple as updating the owner of ds-proxy rather than manualy updating each individual internal function call. In short, making it much more secure and adaptable.

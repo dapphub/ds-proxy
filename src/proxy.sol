@@ -20,26 +20,19 @@ import "ds-auth/auth.sol";
 import "Ds-note/note.sol";
 
 contract DSProxy is DSAuth, DSNote {
-
 	function execute(bytes _code, bytes _data)
 		auth
 		note
 		payable
 		returns (bytes32 response)
 	{
-		uint256 codeLength = _code.length;
-		uint256 dataLength = _data.length;
-
 		assembly {
 			let target := create(0, add(_code, 0x20), mload(_code))	//deploy contract
-			jumpi(0x02, iszero(target))                 			//verify address of deployed contract
-			//calldatacopy(pMem, _data, dataLength)       			//copy request data from calldata to memory
-			let pMem := mload(0x40)                     			//load free memory pointer
-			let succeeded := delegatecall(gas, target, add(_data, 0x20), mload(_data), pMem, 32) //call deployed contract
-			jumpi(0x02, iszero(succeeded))              			//throw if delegatecall failed
-			response := mload(pMem)                     			//set delegatecall output to response
+			jumpi(invalidJumpLabel, iszero(extcodesize(target)))    //throw if deployed contract contains code
+			let succeeded := delegatecall(sub(gas, 10000), target, add(_data, 0x20), mload(_data), response, 32) //call deployed contract in current context
+			jumpi(invalidJumpLabel, iszero(succeeded))              //throw if delegatecall failed
 		}
-		return response;		
+		return response;
 	}
 }
 
@@ -49,10 +42,10 @@ contract DSProxyFactory {
 	mapping(address=>bool) public isProxy;
 
     function build() returns (DSProxy) {
-        var proxy = new DSProxy();
-        Created(msg.sender, proxy);
-        proxy.setAuthority(msg.sender);
-        isProxy[proxy] = true;
+        var proxy = new DSProxy();			//create new proxy contract
+        Created(msg.sender, proxy);			//trigger Created event
+        proxy.setAuthority(msg.sender);		//set authority of proxy
+        isProxy[proxy] = true;				//log proxys created by this factory
         return proxy;
     }
 }

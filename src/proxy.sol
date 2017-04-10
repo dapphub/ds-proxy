@@ -35,12 +35,9 @@ contract DSProxy is DSAuth, DSNote {
 		return response;
 	}
 }
-
 contract DSProxyFactory {
 	event Created(address sender, address proxy);
-
 	mapping(address=>bool) public isProxy;
-
     function build() returns (DSProxy) {
         var proxy = new DSProxy();			//create new proxy contract
         Created(msg.sender, proxy);			//trigger Created event

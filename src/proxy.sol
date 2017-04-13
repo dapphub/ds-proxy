@@ -18,9 +18,8 @@ pragma solidity ^0.4.9;
 import "ds-auth/auth.sol";
 import "Ds-note/note.sol";
 
-contract DSProxy is DSAuth, DSNote {
+contract DSProxy is DSAuth, DSNote { 
 	function execute(bytes _code, bytes _data)
-		auth
 		note
 		payable
 		returns (bytes32 response)
@@ -28,8 +27,9 @@ contract DSProxy is DSAuth, DSNote {
 		assembly {
 			let target := create(0, add(_code, 0x20), mload(_code))	//deploy contract
 			jumpi(invalidJumpLabel, iszero(extcodesize(target)))    //throw if deployed contract contains code
-			let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), response, 32) //call deployed contract in current context
-			jumpi(invalidJumpLabel, iszero(succeeded))             //throw if delegatecall failed
+			let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32) //call deployed contract in current context
+			response := mload(0)									//load delegatecall output to response
+			jumpi(invalidJumpLabel, iszero(succeeded))             	//throw if delegatecall failed
 		}
 		return response;
 	}

@@ -16,7 +16,7 @@
 pragma solidity ^0.4.9;
 
 import "ds-auth/auth.sol";
-import "Ds-note/note.sol";
+import "ds-note/note.sol";
 
 contract DSProxy is DSAuth, DSNote { 
 	function execute(bytes _code, bytes _data)

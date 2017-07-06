@@ -21,7 +21,7 @@ import "ds-note/note.sol";
 contract DSProxy is DSAuth, DSNote { 
   mapping(bytes32 => address) cache;                          //cache for address of created contracts to reduce bloat
 
-	function execute(bytes _code, bytes _data)
+  function execute(bytes _code, bytes _data)
     auth
 		note
 		payable
@@ -34,15 +34,14 @@ contract DSProxy is DSAuth, DSNote {
     } else {
       assembly {
         target := create(0, add(_code, 0x20), mload(_code))   //deploy contract
-        jumpi(invalidJumpLabel, iszero(extcodesize(target)))  //throw if deployed contract contains code
+        jumpi(invalidJumpLabel, iszero(extcodesize(target)))  //throw if deployed contract is empty
       }
       cache[sha3(_code)] = target;                            //save contract address in cache                                               
     }
-
-		assembly {
-			let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32) //call deployed contract in current context
-			response := mload(0)		                               //load delegatecall output to response
-			jumpi(invalidJumpLabel, iszero(succeeded))             //throw if delegatecall failed
+    assembly {
+      let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32) //call deployed contract in current context
+      response := mload(0)		                               //load delegatecall output to response
+      jumpi(invalidJumpLabel, iszero(succeeded))             //throw if delegatecall failed
 		}
 		return response;
 	}

@@ -20,10 +20,19 @@ import "ds-note/note.sol";
 
 contract DSProxy is DSAuth, DSNote { 
 	function execute(bytes _code, bytes _data)
+    auth
 		note
 		payable
 		returns (bytes32 response)
 	{
+    mapping(bytes32 => address) cache;                        //cache for address of created contracts to reduce bloat
+
+    address memory target;
+    if (cache[sha3(_code)] != 0x0) {                          //check if contract is cached
+      target = cache[sha3(_code)];                            //use cached contracted
+    } else {
+
+    }
 		assembly {
 			let target := create(0, add(_code, 0x20), mload(_code))	//deploy contract
 			jumpi(invalidJumpLabel, iszero(extcodesize(target)))    //throw if deployed contract contains code
@@ -41,7 +50,7 @@ contract DSProxyFactory {
         var proxy = new DSProxy();			//create new proxy contract
         Created(msg.sender, proxy);			//trigger Created event
         proxy.setAuthority(msg.sender);			//set authority of proxy
-        isProxy[proxy] = true;				//log proxys created by this factory
+        isProxy[proxy] = true;				  //log proxys created by this factory
         return proxy;
     }
 }

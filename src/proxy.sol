@@ -25,14 +25,15 @@ contract DSProxy is DSAuth, DSNote {
 		payable
 		returns (bytes32 response)
 	{
+    /*
     mapping(bytes32 => address) cache;                        //cache for address of created contracts to reduce bloat
-
     address memory target;
     if (cache[sha3(_code)] != 0x0) {                          //check if contract is cached
       target = cache[sha3(_code)];                            //use cached contracted
     } else {
-
+                                                              //deploy contract
     }
+    */
 		assembly {
 			let target := create(0, add(_code, 0x20), mload(_code))	//deploy contract
 			jumpi(invalidJumpLabel, iszero(extcodesize(target)))    //throw if deployed contract contains code

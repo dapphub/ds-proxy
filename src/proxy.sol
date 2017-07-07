@@ -32,7 +32,7 @@ contract DSProxy is DSAuth, DSNote {
     //TODO:
     //what if cache address points to contract thats not a cache?
     //do you check for this in setCache() or during execute()?
-    if (cacheAddr) {                                            //check if cache has been set
+    if (cacheAddr != 0x0) {                                     //check if cache has been set
       DSProxyCache cache = DSProxyCache(cacheAddr);             //use global proxy cache
       target = cache.readCache(sha3(_code));                    //check if contract is cached
     }

@@ -35,8 +35,8 @@ contract DSProxy is DSAuth, DSNote {
     //what if cache address points to contract thats not a cache?
     //do you check for this in setCache() or during execute()?
     DSProxyCache cache = DSProxyCache(cacheAddr);             //use global proxy cache
-    target = cache.readCache(sha3(_code))                     //check if contract is cached
-    if target == 0x0 {
+    target = cache.readCache(sha3(_code));                    //check if contract is cached
+    if (target == 0x0) {
       assembly {                                              //contract is not cached
         target := create(0, add(_code, 0x20), mload(_code))   //deploy contract
         jumpi(invalidJumpLabel, iszero(extcodesize(target)))  //throw if deployed contract is empty
@@ -52,12 +52,12 @@ contract DSProxy is DSAuth, DSNote {
 		return response;
 	}
 
-  function setCache(address _cacheAddr) returns bool {
+  function setCache(address _cacheAddr) returns (bool) {
     if (_cacheAddr == 0x0) throw;     //invalid cache address
     cacheAddr = _cacheAddr;
   }
 
-  function getCache() returns address {
+  function getCache() returns (address) {
     return cacheAddr;
   }
 }
@@ -76,10 +76,10 @@ contract DSProxyFactory {
 contract DSProxyCache {
   mapping(bytes32 => address) cache;
 
-  function readCache(bytes32 hash) returns address {
+  function readCache(bytes32 hash) returns (address) {
     return cache[hash];
   }
-  function writeCache(bytes hash, address target) returns bool {
+  function writeCache(bytes32 hash, address target) returns (bool) {
     if (hash == 0x0 || target == 0x0) {
       throw;                            //invalid contract
     }

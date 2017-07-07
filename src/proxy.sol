@@ -28,14 +28,14 @@ contract DSProxy is DSAuth, DSNote {
   returns (bytes32 response)
   {
     address target;
-    
-    //TODO: execute should not fail if not cache has been specified.
 
     //TODO:
     //what if cache address points to contract thats not a cache?
     //do you check for this in setCache() or during execute()?
-    DSProxyCache cache = DSProxyCache(cacheAddr);             //use global proxy cache
-    target = cache.readCache(sha3(_code));                    //check if contract is cached
+    if (cacheAddr) {                                            //check if cache has been set
+      DSProxyCache cache = DSProxyCache(cacheAddr);             //use global proxy cache
+      target = cache.readCache(sha3(_code));                    //check if contract is cached
+    }
     if (target == 0x0) {
       assembly {                                              //contract is not cached
         target := create(0, add(_code, 0x20), mload(_code))   //deploy contract

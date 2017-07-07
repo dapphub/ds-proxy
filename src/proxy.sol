@@ -55,6 +55,7 @@ contract DSProxy is DSAuth, DSNote {
   function setCache(address _cacheAddr) returns (bool) {
     if (_cacheAddr == 0x0) throw;     //invalid cache address
     cacheAddr = _cacheAddr;
+    return true;
   }
 
   function getCache() returns (address) {

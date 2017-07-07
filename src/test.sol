@@ -22,9 +22,11 @@ import "./proxy.sol";
 contract DSProxyTest is DSTest {
 	DSProxyFactory factory;
 	DSProxy proxy;
+	DSProxyCache cache;
 
 	function setUp() {
 		factory = new DSProxyFactory();
+		cache = new DSProxyCache();
 	}
 
 	///test 1 - build a proxy from DSProxyFactory
@@ -33,7 +35,6 @@ contract DSProxyTest is DSTest {
 		assert(proxyAddr > 0x0);
 		proxy = DSProxy(proxyAddr);
 
-
 		uint codeSize;
 		assembly {
 			codeSize := extcodesize(proxyAddr)
@@ -41,6 +42,23 @@ contract DSProxyTest is DSTest {
 		assert(codeSize > 0);
 
 		assert(factory.isProxy(proxyAddr));
+	}
+
+	///test 2 - verify getting a cache
+	function testDSProxyCacheAddr1() {
+		DSProxy p = new DSProxy();
+		assert(address(p) > 0x0);
+		address cacheAddr = p.getCache();
+		assert(cacheAddr == 0x0);
+	}
+
+	///test 3 - verify setting a new cache
+	function testDSProxyCacheAddr2() {
+		DSProxy p = new DSProxy();
+		assert(address(p) > 0x0);
+		address cacheAddr = address(cache);
+		assert(p.setCache(cacheAddr));
+		assert(p.getCache() == cacheAddr);
 	}
 
 	///test 2 - use proxy to getBytes from test contract - no args in calldata

@@ -19,32 +19,47 @@ import "ds-auth/auth.sol";
 import "ds-note/note.sol";
 
 contract DSProxy is DSAuth, DSNote { 
-  mapping(bytes32 => address) cache;                          //cache for address of created contracts to reduce bloat
+  address cacheAddr;                                          //address of the global proxy cache
 
   function execute(bytes _code, bytes _data)
-    auth
-		note
-		payable
-		returns (bytes32 response)
-	{
+  auth
+  note
+  payable
+  returns (bytes32 response)
+  {
     address target;
+    
+    //TODO: execute should not fail if not cache has been specified.
 
-    if (cache[sha3(_code)] != 0x0) {                          //check if contract is cached
-      target = cache[sha3(_code)];                            //use cached contracted
-    } else {
-      assembly {
+    //TODO:
+    //what if cache address points to contract thats not a cache?
+    //do you check for this in setCache() or during execute()?
+    DSProxyCache cache = DSProxyCache(cacheAddr);             //use global proxy cache
+    target = cache.readCache(sha3(_code))                     //check if contract is cached
+    if target == 0x0 {
+      assembly {                                              //contract is not cached
         target := create(0, add(_code, 0x20), mload(_code))   //deploy contract
         jumpi(invalidJumpLabel, iszero(extcodesize(target)))  //throw if deployed contract is empty
       }
-      cache[sha3(_code)] = target;                            //save contract address in cache                                               
+      cache.writeCache(sha3(_code), target);                  //store deployed contract address in cache
     }
+
     assembly {
-      let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32) //call deployed contract in current context
-      response := mload(0)		                               //load delegatecall output to response
+      let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32) //call contract in current context
+      response := mload(0)		                     //load delegatecall output to response
       jumpi(invalidJumpLabel, iszero(succeeded))             //throw if delegatecall failed
 		}
 		return response;
 	}
+
+  function setCache(address _cacheAddr) returns bool {
+    if (_cacheAddr == 0x0) throw;     //invalid cache address
+    cacheAddr = _cacheAddr;
+  }
+
+  function getCache() returns address {
+    return cacheAddr;
+  }
 }
 contract DSProxyFactory {
 	event Created(address sender, address proxy);
@@ -53,7 +68,22 @@ contract DSProxyFactory {
         var proxy = new DSProxy();			//create new proxy contract
         Created(msg.sender, proxy);			//trigger Created event
         proxy.setOwner(msg.sender);			//set caller as owner of proxy
-        isProxy[proxy] = true;				  //log proxys created by this factory
+        isProxy[proxy] = true;				//log proxys created by this factory
         return proxy;
     }
+}
+
+contract DSProxyCache {
+  mapping(bytes32 => address) cache;
+
+  function readCache(bytes32 hash) returns address {
+    return cache[hash];
+  }
+  function writeCache(bytes hash, address target) returns bool {
+    if (hash == 0x0 || target == 0x0) {
+      throw;                            //invalid contract
+    }
+    cache[hash] = target;
+    return true;
+  }
 }

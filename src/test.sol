@@ -27,6 +27,7 @@ contract DSProxyTest is DSTest {
 	function setUp() {
 		factory = new DSProxyFactory();
 		cache = new DSProxyCache();
+		proxy = new DSProxy(cache);
 	}
 
 	///test 1 - build a proxy from DSProxyFactory
@@ -46,19 +47,21 @@ contract DSProxyTest is DSTest {
 
 	///test 2 - verify getting a cache
 	function testDSProxyCacheAddr1() {
-		DSProxy p = new DSProxy();
+		DSProxy p = new DSProxy(cache);
 		assert(address(p) > 0x0);
 		address cacheAddr = p.getCache();
-		assert(cacheAddr == 0x0);
+		assert(cacheAddr != 0x0);
 	}
 
 	///test 3 - verify setting a new cache
 	function testDSProxyCacheAddr2() {
-		DSProxy p = new DSProxy();
+		DSProxy p = new DSProxy(cache);
 		assert(address(p) > 0x0);
-		address cacheAddr = address(cache);
-		assert(p.setCache(cacheAddr));
-		assert(p.getCache() == cacheAddr);
+		address newCacheAddr = address(new DSProxyCache());
+		address oldCacheAddr = address(cache);
+		assert(p.setCache(newCacheAddr));
+		assert(p.getCache() == newCacheAddr);
+		assert(oldCacheAddr != newCacheAddr);
 	}
 
 	///test 2 - use proxy to getBytes from test contract - no args in calldata

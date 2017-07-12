@@ -49,9 +49,9 @@ contract DSProxy is DSAuth, DSNote {
       let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32)  //call contract in current context
       response := mload(0)                                    //load delegatecall output to response
       jumpi(invalidJumpLabel, iszero(succeeded))              //throw if delegatecall failed
-		}
-		return response;
-	}
+    }
+    return response;
+  }
 
   function setCache(address _cacheAddr)
   auth
@@ -62,20 +62,19 @@ contract DSProxy is DSAuth, DSNote {
     return true;
   }
 
-  function getCache() returns (address) {
+  function getCache() public constant returns (address) {
     return cacheAddr;
   }
 }
 contract DSProxyFactory {
-	event Created(address sender, address proxy, address cache);
-
-	mapping(address=>bool) public isProxy;
+  event Created(address sender, address proxy, address cache);
+  mapping(address=>bool) public isProxy;
   DSProxyCache cache = new DSProxyCache();
-
+  
   function build() returns (DSProxy) {
     var proxy = new DSProxy(cache);               //create new proxy contract
     Created(msg.sender, proxy, address(cache));   //trigger Created event
-    proxy.setOwner(msg.sender);                   //set caller as owner of proxy
+    //proxy.setOwner(msg.sender);                   //set caller as owner of proxy
     isProxy[proxy] = true;                        //log proxys created by this factory
       return proxy;
   }
@@ -84,7 +83,7 @@ contract DSProxyFactory {
 contract DSProxyCache {
   mapping(bytes32 => address) cache;
 
-  function readCache(bytes32 hash) returns (address) {
+  function readCache(bytes32 hash) constant returns (address) {
     return cache[hash];
   }
   function writeCache(bytes32 hash, address target) returns (bool) {

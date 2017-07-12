@@ -13,16 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.9;
 
 import "ds-test/test.sol";
 import "./proxy.sol";
 
 contract DSProxyTest is DSTest {
 	DSProxyFactory factory;
-	DSProxy proxy;
 	DSProxyCache cache;
+	DSProxy proxy;
 
 	function setUp() {
 		factory = new DSProxyFactory();

@@ -45,7 +45,10 @@ contract DSProxy is DSAuth, DSNote {
     if (target == 0x0) {
       assembly {                                              //contract is not cached
         target := create(0, add(_code, 0x20), mload(_code))   //deploy contract
-        jumpi(invalidJumpLabel, iszero(extcodesize(target)))  //throw if deployed contract is empty
+        switch iszero(extcodesize(target))                    //throw if deployed contract is empty
+        case 1 {
+          revert(0, 0)                                        //contract failed to deploy => throw
+        }
       }
       cache.writeCache(sha3(_code), target);                  //store deployed contract address in cache
     }
@@ -54,7 +57,10 @@ contract DSProxy is DSAuth, DSNote {
     assembly {                                                //call contract in current context
       let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32)
       response := mload(0)                                    //load delegatecall output to response
-      jumpi(invalidJumpLabel, iszero(succeeded))              //throw if delegatecall failed
+      switch iszero(succeeded)                                //throw if delegatecall failed
+      case 1 {
+        revert(0, 0)                                          //delegatecall failed => throw
+      }
     }
     return response;
   }
@@ -64,7 +70,7 @@ contract DSProxy is DSAuth, DSNote {
   auth
   note
   returns (bool) {
-    if (_cacheAddr == 0x0) throw;     //invalid cache address
+    if (_cacheAddr == 0x0) revert();  //invalid cache address
     cacheAddr = _cacheAddr;           //overwrite cache
     return true;
   }
@@ -86,10 +92,10 @@ contract DSProxyFactory {
   //deploys a new proxy instance
   //sets owner of proxy to caller
   function build() returns (DSProxy) {
-    DSProxy proxy = new DSProxy(cache);                     //create new proxy contract
-    Created(msg.sender, address(proxy), address(cache));    //trigger Created event
-    proxy.setOwner(msg.sender);                             //set caller as owner of proxy
-    isProxy[proxy] = true;                                  //log proxys created by this factory
+    DSProxy proxy = new DSProxy(cache);                       //create new proxy contract
+    Created(msg.sender, address(proxy), address(cache));      //trigger Created event
+    proxy.setOwner(msg.sender);                               //set caller as owner of proxy
+    isProxy[proxy] = true;                                    //log proxys created by this factory
     return proxy;
   }
 }
@@ -112,7 +118,7 @@ contract DSProxyCache {
   //write new contract to cache
   function writeCache(bytes32 hash, address target) returns (bool) {
     if (hash == 0x0 || target == 0x0) {
-      throw;                            //invalid contract
+      revert();                                               //invalid contract
     }
     cache[hash] = target;
     return true;

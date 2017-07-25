@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-pragma solidity ^0.4.9;
+pragma solidity ^0.4.13;
 
 import "ds-auth/auth.sol";
 import "ds-note/note.sol";

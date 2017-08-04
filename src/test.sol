@@ -96,7 +96,7 @@ contract DSProxyTest is DSTest {
 		bytes memory calldata = hex"0bcd3b33";
 
 		//verify contract is not stored in cache
-		assertEq(cache.readCache(sha3(testCode)), 0x0);
+		assertEq(cache.read(sha3(testCode)), 0x0);
 
 		//deploy and call the contracts code
 		bytes32 response = proxy.execute(testCode, calldata);
@@ -105,6 +105,6 @@ contract DSProxyTest is DSTest {
 		assertEq(response, bytes32(0x1));
 
 		//verify contract is stored in cache
-		assert(cache.readCache(sha3(testCode)) != 0x0);
+		assert(cache.read(sha3(testCode)) != 0x0);
 	}
 }

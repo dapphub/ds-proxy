@@ -25,7 +25,7 @@ import "ds-note/note.sol";
 //be changed, this allows for dynamic ownership models
 //i.e. a multisig
 contract DSProxy is DSAuth, DSNote { 
-  address public cacheAddr;                                   //address of the global proxy cache
+  DSProxyCache public cache;                                  //global cache for contracts
 
   function DSProxy(address _cacheAddr) {
     assert(setCache(_cacheAddr));
@@ -39,8 +39,6 @@ contract DSProxy is DSAuth, DSNote {
   {
     address target;
 
-    //Check Cache
-    DSProxyCache cache = DSProxyCache(cacheAddr);             //use global proxy cache
     target = cache.read(sha3(_code));                         //check if contract is cached
     if (target == 0x0) {
       assembly {                                              //contract is not cached
@@ -53,7 +51,6 @@ contract DSProxy is DSAuth, DSNote {
       cache.write(sha3(_code), target);                       //store deployed contract address in cache
     }
 
-    //Execute Code
     assembly {                                                //call contract in current context
       let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32)
       response := mload(0)                                    //load delegatecall output to response
@@ -70,14 +67,14 @@ contract DSProxy is DSAuth, DSNote {
   auth
   note
   returns (bool) {
-    if (_cacheAddr == 0x0) revert();  //invalid cache address
-    cacheAddr = _cacheAddr;           //overwrite cache
+    if (_cacheAddr == 0x0) revert();                          //invalid cache address
+    cache = DSProxyCache(_cacheAddr);                         //overwrite cache
     return true;
   }
 
   //get current cache
   function getCache() public constant returns (address) {
-    return cacheAddr;
+    return cache;
   }
 }
 

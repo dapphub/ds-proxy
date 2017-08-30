@@ -31,13 +31,13 @@ contract DSProxyTest is DSTest {
 
 	///test1 - check that DSProxyFactory creates a cache
 	function test_DSProxyFactoryCheckCache() {
-		assert(address(factory.cache) > 0x0);
+		assertTrue(address(factory.cache) > 0x0);
 	}
 
 	///test 2 - build a proxy from DSProxyFactory and verify logging
 	function test_DSProxyFactoryBuildProc() {
 		address proxyAddr = factory.build();
-		assert(proxyAddr > 0x0);
+		assertTrue(proxyAddr > 0x0);
 		proxy = DSProxy(proxyAddr);
 
 		uint codeSize;
@@ -45,35 +45,35 @@ contract DSProxyTest is DSTest {
 			codeSize := extcodesize(proxyAddr)
 		}
 		//verify proxy was deployed successfully
-		assert(codeSize > 0);
+		assertTrue(codeSize > 0);
 
 		//verify proxy creation was logged
-		assert(factory.isProxy(proxyAddr));
+		assertTrue(factory.isProxy(proxyAddr));
 
 		//verify logging doesnt return false positives
 		address notProxy = 0xd2A49A27F3E68d9ab1973849eaA0BEC41A6592Ed;
-		assert(!factory.isProxy(notProxy));
+		assertTrue(!factory.isProxy(notProxy));
 	}
 
 	///test 3 - verify getting a cache
 	function test_DSProxyCacheAddr1() {
 		DSProxy p = new DSProxy(cache);
-		assert(address(p) > 0x0);
+		assertTrue(address(p) > 0x0);
 		address cacheAddr = p.getCache();
-		assert(cacheAddr == address(cache));
-		assert(cacheAddr != 0x0);
+		assertTrue(cacheAddr == address(cache));
+		assertTrue(cacheAddr != 0x0);
 	}
 
 	///test 4 - verify setting a new cache
 	function test_DSProxyCacheAddr2() {
 		DSProxy p = new DSProxy(cache);
-		assert(address(p) > 0x0);
+		assertTrue(address(p) > 0x0);
 		address newCacheAddr = address(new DSProxyCache());
 		address oldCacheAddr = address(cache);
 		assertEq(p.getCache(), oldCacheAddr);
-		assert(p.setCache(newCacheAddr));
+		assertTrue(p.setCache(newCacheAddr));
 		assertEq(p.getCache(), newCacheAddr);
-		assert(oldCacheAddr != newCacheAddr);
+		assertTrue(oldCacheAddr != newCacheAddr);
 	}
 
 	//Test Contract Used
@@ -105,6 +105,6 @@ contract DSProxyTest is DSTest {
 		assertEq(response, bytes32(0x1));
 
 		//verify contract is stored in cache
-		assert(cache.read(testCode) != 0x0);
+		assertTrue(cache.read(testCode) != 0x0);
 	}
 }

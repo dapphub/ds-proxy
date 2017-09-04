@@ -39,7 +39,7 @@ contract DSProxy is DSAuth, DSNote {
   {
     address target;
 
-    target = cache.read(_code);                         //check if contract is cached
+    target = cache.read(sha3(_code));                         //check if contract is cached
     if (target == 0x0) {
       assembly {                                              //contract is not cached
         target := create(0, add(_code, 0x20), mload(_code))   //deploy contract
@@ -48,7 +48,7 @@ contract DSProxy is DSAuth, DSNote {
           revert(0, 0)                                        //contract failed to deploy => throw
         }
       }
-      cache.write(_code, target);                             //store deployed contract address in cache
+      assert(cache.write(target));                            //store deployed contract address in cache
     }
 
     assembly {                                                //call contract in current context
@@ -108,18 +108,25 @@ contract DSProxyCache {
   mapping(bytes32 => address) cache;
 
   //check if cache contains contract
-  function read(bytes _code) constant returns (address) {
-    bytes32 hash = sha3(_code);
-    return cache[hash];
+  function read(bytes32 _hash) constant returns (address) {
+    return cache[_hash];
   }
 
   //write new contract to cache
-  function write(bytes _code, address _target) returns (bool) {
-    bytes32 hash = sha3(_code);                               //get keccak-256 hash of contract code
-    if (_target == 0x0) {
-      revert();                                               //invalid contract
+  function write(address _target) returns (bool) {
+    bytes memory code;
+    assembly {
+      let size := extcodesize(_target)                        //get size (in bytes) of contract
+      switch iszero(size)                                     //check if contract exists
+      case 1 {
+        revert(0, 0)                                          //throw because contract does not exist
+      }
+      code := mload(0x40)                                     //load free memory pointer
+      mstore(0x40, add(code, and(add(add(size, 0x20), 0x1f), not(0x1f)))) //store new free memory pointer w/ correct padding
+      mstore(code, size)                                      //store array size            
+      extcodecopy(_target, add(code, 0x20) , 0, size)         //copy code from contract address to memory
     }
-    cache[hash] = _target;                                    //map contract hash to contract address
+    cache[sha3(code)] = _target;                              //map contract sha3 hash to contract address
     return true;
   }
 }

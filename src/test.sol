@@ -107,4 +107,11 @@ contract DSProxyTest is DSTest {
 		//verify contract is stored in cache
 		assertTrue(cache.read(testCode) != 0x0);
 	}
+
+	///test 6 - proxy receives ETH
+	function test_DSProxyReceiveETH() {
+		assertEq(proxy.balance, 0);
+		assert(proxy.call.value(10)());
+		assertEq(proxy.balance, 10);
+	}
 }

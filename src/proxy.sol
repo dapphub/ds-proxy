@@ -30,6 +30,10 @@ contract DSProxy is DSAuth, DSNote {
   function DSProxy(address _cacheAddr) {
     assert(setCache(_cacheAddr));
   }
+
+  function() payable {
+  }
+
   //use the proxy to execute calldata _data on contract _code
   function execute(bytes _code, bytes _data)
   auth

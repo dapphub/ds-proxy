@@ -27,19 +27,20 @@ import "ds-note/note.sol";
 contract DSProxy is DSAuth, DSNote { 
   DSProxyCache public cache;                                  //global cache for contracts
 
-  function DSProxy(address _cacheAddr) {
+  function DSProxy(address _cacheAddr) public {
     assert(setCache(_cacheAddr));
   }
 
-  function() payable {
+  function() public payable {
   }
 
   //use the proxy to execute calldata _data on contract _code
   function execute(bytes _code, bytes _data)
-  auth
-  note
-  payable
-  returns (bytes32 response)
+    public
+    auth
+    note
+    payable
+    returns (bytes32 response)
   {
     address target;
 
@@ -68,16 +69,18 @@ contract DSProxy is DSAuth, DSNote {
 
   //set new cache
   function setCache(address _cacheAddr)
-  auth
-  note
-  returns (bool) {
+    public
+    auth
+    note
+    returns (bool) 
+  {
     if (_cacheAddr == 0x0) revert();                          //invalid cache address
     cache = DSProxyCache(_cacheAddr);                         //overwrite cache
     return true;
   }
 
   //get current cache
-  function getCache() public constant returns (address) {
+  function getCache() public view returns (address) {
     return cache;
   }
 }
@@ -92,7 +95,7 @@ contract DSProxyFactory {
   
   //deploys a new proxy instance
   //sets owner of proxy to caller
-  function build() returns (DSProxy) {
+  function build() public returns (DSProxy) {
     DSProxy proxy = new DSProxy(cache);                       //create new proxy contract
     Created(msg.sender, address(proxy), address(cache));      //trigger Created event
     proxy.setOwner(msg.sender);                               //set caller as owner of proxy
@@ -112,14 +115,14 @@ contract DSProxyCache {
   mapping(bytes32 => address) cache;
 
   //check if cache contains contract
-  function read(bytes _code) constant returns (address) {
-    bytes32 hash = sha3(_code);
+  function read(bytes _code) public view returns (address) {
+    bytes32 hash = keccak256(_code);
     return cache[hash];
   }
 
   //write new contract to cache
-  function write(bytes _code, address _target) returns (bool) {
-    bytes32 hash = sha3(_code);                               //get keccak-256 hash of contract code
+  function write(bytes _code, address _target) public returns (bool) {
+    bytes32 hash = keccak256(_code);                               //get keccak-256 hash of contract code
     if (_target == 0x0) {
       revert();                                               //invalid contract
     }

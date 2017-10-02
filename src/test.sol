@@ -23,19 +23,19 @@ contract DSProxyTest is DSTest {
 	DSProxyCache cache;
 	DSProxy proxy;
 
-	function setUp() {
+	function setUp() public {
 		factory = new DSProxyFactory();
 		cache = new DSProxyCache();
 		proxy = new DSProxy(cache);
 	}
 
 	///test1 - check that DSProxyFactory creates a cache
-	function test_DSProxyFactoryCheckCache() {
+	function test_DSProxyFactoryCheckCache() public {
 		assertTrue(address(factory.cache) > 0x0);
 	}
 
 	///test 2 - build a proxy from DSProxyFactory and verify logging
-	function test_DSProxyFactoryBuildProc() {
+	function test_DSProxyFactoryBuildProc() public {
 		address proxyAddr = factory.build();
 		assertTrue(proxyAddr > 0x0);
 		proxy = DSProxy(proxyAddr);
@@ -56,7 +56,7 @@ contract DSProxyTest is DSTest {
 	}
 
 	///test 3 - verify getting a cache
-	function test_DSProxyCacheAddr1() {
+	function test_DSProxyCacheAddr1() public {
 		DSProxy p = new DSProxy(cache);
 		assertTrue(address(p) > 0x0);
 		address cacheAddr = p.getCache();
@@ -65,7 +65,7 @@ contract DSProxyTest is DSTest {
 	}
 
 	///test 4 - verify setting a new cache
-	function test_DSProxyCacheAddr2() {
+	function test_DSProxyCacheAddr2() public {
 		DSProxy p = new DSProxy(cache);
 		assertTrue(address(p) > 0x0);
 		address newCacheAddr = address(new DSProxyCache());
@@ -88,7 +88,7 @@ contract DSProxyTest is DSTest {
 	*/
 
 	///test 5 - execute an action through proxy and verify caching
-	function test_DSProxyExecute() {
+	function test_DSProxyExecute() public {
 		//test contract bytecode
 		bytes memory testCode = hex"60606040523415600b57fe5b5b609e8061001a6000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630bcd3b3314603a575bfe5b3415604157fe5b60476065565b60405180826000191660001916815260200191505060405180910390f35b6000600160010290505b905600a165627a7a72305820c0a9ddff06dd48d3745191e58e1c0cb32c940886d299b285a91fdaa5884551560029";
 		
@@ -109,7 +109,7 @@ contract DSProxyTest is DSTest {
 	}
 
 	///test 6 - proxy receives ETH
-	function test_DSProxyReceiveETH() {
+	function test_DSProxyReceiveETH() public {
 		assertEq(proxy.balance, 0);
 		assert(proxy.call.value(10)());
 		assertEq(proxy.balance, 10);

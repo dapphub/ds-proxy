@@ -99,13 +99,19 @@ contract DSProxyTest is DSTest {
 		assertEq(cache.read(testCode), 0x0);
 
 		//deploy and call the contracts code
-		bytes32 response = proxy.execute(testCode, calldata);
+		var (target, response) = proxy.execute(testCode, calldata);
 
 		//verify we got correct response
 		assertEq(response, bytes32(0x1));
 
 		//verify contract is stored in cache
 		assertTrue(cache.read(testCode) != 0x0);
+
+		//call the contracts code using target address
+		response = proxy.execute(target, calldata);
+
+		//verify we got correct response
+		assertEq(response, bytes32(0x1));
 	}
 
 	///test 6 - proxy receives ETH

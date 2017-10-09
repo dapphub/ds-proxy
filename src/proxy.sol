@@ -36,13 +36,9 @@ contract DSProxy is DSAuth, DSNote {
     // use the proxy to execute calldata _data on contract _code
     function execute(bytes _code, bytes _data)
         public
-        auth
-        note
         payable
-        returns (bytes32 response)
+        returns (address target, bytes32 response)
     {
-        address target;
-
         // deploy contract if uncached
         target = cache.read(_code);
         if (target == 0x0) {
@@ -57,10 +53,20 @@ contract DSProxy is DSAuth, DSNote {
             // store deployed contract address in cache
             cache.write(_code, target);
         }
+        response = execute(target, _data);
+    }
 
+    // use the proxy to execute calldata _data on contract _code
+    function execute(address _target, bytes _data)
+        public
+        auth
+        note
+        payable
+        returns (bytes32 response)
+    {
         // call contract in current context
         assembly {
-            let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32)
+            let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 32)
             response := mload(0)      // load delegatecall output
             switch iszero(succeeded)
             case 1 {
@@ -68,7 +74,6 @@ contract DSProxy is DSAuth, DSNote {
                 revert(0, 0)
             }
         }
-        return response;
     }
 
     //set new cache

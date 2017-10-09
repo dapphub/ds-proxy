@@ -56,7 +56,7 @@ contract DSProxy is DSAuth, DSNote {
         response = execute(target, _data);
     }
 
-    // use the proxy to execute calldata _data on contract _code
+    // use the proxy to execute calldata _data on contract address _target
     function execute(address _target, bytes _data)
         public
         auth

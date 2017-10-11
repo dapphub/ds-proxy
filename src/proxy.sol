@@ -18,23 +18,36 @@ pragma solidity ^0.4.13;
 import "ds-auth/auth.sol";
 import "ds-note/note.sol";
 
+contract DSProxyCache {
+    mapping( bytes32 => address ) public cache;
+    function read(bytes32 hash) public returns (address);
+    function read(bytes code) public view returns (address);
+    function write(bytes _code, address _target) public returns (bool);
+}
+
 // DSProxy
 // Allows code execution using a persistant identity This can be very
 // useful to execute a sequence of atomic actions. Since the owner of
 // the proxy can be changed, this allows for dynamic ownership models
 // i.e. a multisig
 contract DSProxy is DSAuth, DSNote {
-    DSProxyCache public cache;  // global cache for contracts
+    DSProxyCache   public cache;    // global cache for code -> canonical address
+    bool           public system; // prevents proxy owner from butchering the cache
 
-    function DSProxy(address _cacheAddr) public {
-        assert(setCache(_cacheAddr));
+    function DSProxy() public {
+        // Proxies should only be deployed via the factory or else they will malfunction
+        cache = DSProxyCache(msg.sender);
     }
 
     function() public payable {
     }
 
-    // use the proxy to execute calldata _data on contract _code
-    function execute(bytes _code, bytes _data)
+    function exec() {
+        // TODO aliases
+    }
+
+    // use the proxy to execute calldata `data` on contract `code`
+    function execute(bytes code, bytes data)
         public
         auth
         note
@@ -44,10 +57,11 @@ contract DSProxy is DSAuth, DSNote {
         address target;
 
         // deploy contract if uncached
-        target = cache.read(_code);
+        target = cache.read(code);
         if (target == 0x0) {
+            system = true;
             assembly {
-                target := create(0, add(_code, 0x20), mload(_code))
+                target := create(0, add(code, 0x20), mload(code))
                 switch iszero(extcodesize(target))
                 case 1 {
                     // throw if contract failed to deploy
@@ -55,12 +69,13 @@ contract DSProxy is DSAuth, DSNote {
                 }
             }
             // store deployed contract address in cache
-            cache.write(_code, target);
+            cache.write(code, target);
+            system = false;
         }
 
         // call contract in current context
         assembly {
-            let succeeded := delegatecall(sub(gas, 5000), target, add(_data, 0x20), mload(_data), 0, 32)
+            let succeeded := delegatecall(sub(gas, 5000), target, add(data, 0x20), mload(data), 0, 32)
             response := mload(0)      // load delegatecall output
             switch iszero(succeeded)
             case 1 {
@@ -70,62 +85,42 @@ contract DSProxy is DSAuth, DSNote {
         }
         return response;
     }
-
-    //set new cache
-    function setCache(address _cacheAddr)
-        public
-        auth
-        note
-        returns (bool)
-    {
-        if (_cacheAddr == 0x0) revert();   // invalid cache address
-        cache = DSProxyCache(_cacheAddr);  // overwrite cache
-        return true;
-    }
-
-    //get current cache
-    function getCache() public view returns (address) {
-        return cache;
-    }
 }
 
 // DSProxyFactory
 // This factory deploys new proxy instances through build()
 // Deployed proxy addresses are logged
-contract DSProxyFactory {
-    event Created(address indexed sender, address proxy, address cache);
+// 
+contract DSProxyFactory is DSProxyCache {
+    event Created(address indexed sender, address proxy);
     mapping(address=>bool) public isProxy;
-    DSProxyCache public cache = new DSProxyCache();
 
     //deploys a new proxy instance
     //sets owner of proxy to caller
     function build() public returns (DSProxy) {
-        DSProxy proxy = new DSProxy(cache);
-        Created(msg.sender, address(proxy), address(cache));
+        DSProxy proxy = new DSProxy();
+        Created(msg.sender, address(proxy));
         proxy.setOwner(msg.sender);
         isProxy[proxy] = true;
         return proxy;
     }
-}
 
-// DSProxyCache
-// This global cache stores addresses of contracts previously deployed
-// by a proxy. This saves gas from repeat deployment of the same
-// contracts and eliminates blockchain bloat.
 
-// By default, all proxies deployed from the same factory store
-// contracts in the same cache. The cache a proxy instance uses can be
-// changed.  The cache uses the sha3 hash of a contract's bytecode to
-// lookup the address
-contract DSProxyCache {
-    mapping(bytes32 => address) cache;
-
-    function read(bytes _code) public view returns (address) {
-        bytes32 hash = keccak256(_code);
+    function read(bytes code)
+        public view returns (address) {
+        bytes32 hash = keccak256(code);
+        return cache[hash];
+    }
+    function read(bytes32 hash) public returns (address) {
         return cache[hash];
     }
 
-    function write(bytes _code, address _target) public returns (bool) {
+    function write(bytes _code, address _target)
+        public
+        returns (bool)
+    {
+        require(isProxy[msg.sender]);
+        require(DSProxy(msg.sender).system());
         bytes32 hash = keccak256(_code);
         if (_target == 0x0) {
             // invalid contract
@@ -134,4 +129,5 @@ contract DSProxyCache {
         cache[hash] = _target;
         return true;
     }
+
 }

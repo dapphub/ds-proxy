@@ -41,21 +41,10 @@ contract DSProxy is DSAuth, DSNote {
         payable
         returns (bytes32 response)
     {
-        address target;
-
-        // deploy contract if uncached
-        target = cache.read(_code);
+        address target = cache.read(_code);
         if (target == 0x0) {
-            assembly {
-                target := create(0, add(_code, 0x20), mload(_code))
-                switch iszero(extcodesize(target))
-                case 1 {
-                    // throw if contract failed to deploy
-                    revert(0, 0)
-                }
-            }
-            // store deployed contract address in cache
-            cache.write(_code, target);
+            // deploy contract & store its address in cache
+            target = cache.write(_code);
         }
 
         // call contract in current context
@@ -125,13 +114,16 @@ contract DSProxyCache {
         return cache[hash];
     }
 
-    function write(bytes _code, address _target) public returns (bool) {
-        bytes32 hash = keccak256(_code);
-        if (_target == 0x0) {
-            // invalid contract
-            revert();
+    function write(bytes _code) public returns (address target) {
+        assembly {
+            target := create(0, add(_code, 0x20), mload(_code))
+            switch iszero(extcodesize(target))
+            case 1 {
+                // throw if contract failed to deploy
+                revert(0, 0)
+            }
         }
-        cache[hash] = _target;
-        return true;
+        bytes32 hash = keccak256(_code);
+        cache[hash] = target;
     }
 }

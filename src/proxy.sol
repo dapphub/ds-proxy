@@ -27,7 +27,7 @@ contract DSProxy is DSAuth, DSNote {
     DSProxyCache public cache;  // global cache for contracts
 
     function DSProxy(address _cacheAddr) public {
-        assert(setCache(_cacheAddr));
+        require(setCache(_cacheAddr));
     }
 
     function() public payable {
@@ -67,7 +67,6 @@ contract DSProxy is DSAuth, DSNote {
                 revert(0, 0)
             }
         }
-        return response;
     }
 
     //set new cache
@@ -77,7 +76,7 @@ contract DSProxy is DSAuth, DSNote {
         note
         returns (bool)
     {
-        if (_cacheAddr == 0x0) revert();   // invalid cache address
+        require(_cacheAddr != 0x0);        // invalid cache address
         cache = DSProxyCache(_cacheAddr);  // overwrite cache
         return true;
     }
@@ -93,12 +92,11 @@ contract DSProxyFactory {
 
     //deploys a new proxy instance
     //sets owner of proxy to caller
-    function build() public returns (DSProxy) {
-        DSProxy proxy = new DSProxy(cache);
+    function build() public returns (DSProxy proxy) {
+        proxy = new DSProxy(cache);
         Created(msg.sender, address(proxy), address(cache));
         proxy.setOwner(msg.sender);
         isProxy[proxy] = true;
-        return proxy;
     }
 }
 

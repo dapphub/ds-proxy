@@ -59,7 +59,7 @@ contract DSProxyTest is DSTest {
 	function test_DSProxyCacheAddr1() public {
 		DSProxy p = new DSProxy(cache);
 		assertTrue(address(p) > 0x0);
-		address cacheAddr = p.getCache();
+		address cacheAddr = p.cache();
 		assertTrue(cacheAddr == address(cache));
 		assertTrue(cacheAddr != 0x0);
 	}
@@ -70,9 +70,9 @@ contract DSProxyTest is DSTest {
 		assertTrue(address(p) > 0x0);
 		address newCacheAddr = address(new DSProxyCache());
 		address oldCacheAddr = address(cache);
-		assertEq(p.getCache(), oldCacheAddr);
+		assertEq(p.cache(), oldCacheAddr);
 		assertTrue(p.setCache(newCacheAddr));
-		assertEq(p.getCache(), newCacheAddr);
+		assertEq(p.cache(), newCacheAddr);
 		assertTrue(oldCacheAddr != newCacheAddr);
 	}
 
@@ -99,13 +99,19 @@ contract DSProxyTest is DSTest {
 		assertEq(cache.read(testCode), 0x0);
 
 		//deploy and call the contracts code
-		bytes32 response = proxy.execute(testCode, calldata);
+		var (target, response) = proxy.execute(testCode, calldata);
 
 		//verify we got correct response
 		assertEq(response, bytes32(0x1));
 
 		//verify contract is stored in cache
 		assertTrue(cache.read(testCode) != 0x0);
+
+		//call the contracts code using target address
+ 		response = proxy.execute(target, calldata);
+ 
+ 		//verify we got correct response
+ 		assertEq(response, bytes32(0x1));
 	}
 
 	///test 6 - proxy receives ETH

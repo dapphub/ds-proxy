@@ -20,6 +20,12 @@ pragma solidity ^0.4.13;
 import "ds-test/test.sol";
 import "./proxy.sol";
 
+contract WithdrawFunds {
+	function withdraw(uint256 amount) {
+		msg.sender.transfer(amount);
+	}
+}
+
 contract DSProxyTest is DSTest {
 	DSProxyFactory factory;
 	DSProxyCache cache;
@@ -116,10 +122,25 @@ contract DSProxyTest is DSTest {
  		assertEq(response, bytes32(0x1));
 	}
 
-	///test 6 - proxy receives ETH
-	function test_DSProxyReceiveETH() public {
+	///test 6 - deposit ETH to Proxy
+	function test_DSProxyDepositETH() public {
 		assertEq(proxy.balance, 0);
 		assert(proxy.call.value(10)());
 		assertEq(proxy.balance, 10);
 	}
+
+	///test 7 - withdraw ETH from Proxy
+	function test_DSProxyWithdrawETH() public {
+		assert(proxy.call.value(10)());
+		assertEq(proxy.balance, 10);
+		uint256 myBalance = this.balance;
+		address withdrawFunds = new WithdrawFunds();
+		bytes memory calldata = hex"2e1a7d4d0000000000000000000000000000000000000000000000000000000000000005"; // withdraw(5)
+		proxy.execute(withdrawFunds, calldata);
+		assertEq(proxy.balance, 5);
+		assertEq(this.balance, myBalance + 5);
+	}
+
+	function() public payable {
+    }
 }

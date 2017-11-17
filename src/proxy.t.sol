@@ -21,7 +21,7 @@ import "ds-test/test.sol";
 import "./proxy.sol";
 
 contract WithdrawFunds {
-	function withdraw(uint256 amount) {
+	function withdraw(uint256 amount) public {
 		msg.sender.transfer(amount);
 	}
 }

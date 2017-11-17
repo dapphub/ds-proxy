@@ -27,6 +27,7 @@ import "ds-note/note.sol";
 // i.e. a multisig
 contract DSProxy is DSAuth, DSNote {
     DSProxyCache public cache;  // global cache for contracts
+    uint128 public reserve = 5000; // reserve gas after delegatecall
 
     function DSProxy(address _cacheAddr) public {
         require(setCache(_cacheAddr));
@@ -61,7 +62,7 @@ contract DSProxy is DSAuth, DSNote {
 
         // call contract in current context
         assembly {
-            let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 32)
+            let succeeded := delegatecall(sub(gas, reserve), _target, add(_data, 0x20), mload(_data), 0, 32)
             response := mload(0)      // load delegatecall output
             switch iszero(succeeded)
             case 1 {
@@ -81,6 +82,17 @@ contract DSProxy is DSAuth, DSNote {
         require(_cacheAddr != 0x0);        // invalid cache address
         cache = DSProxyCache(_cacheAddr);  // overwrite cache
         return true;
+    }
+
+    //set the reserve gas for contract after delegatecall
+    function setReserve(uint128 _gas) 
+    	public
+	auth
+	note
+	returns(bool)
+    {
+	reserve = _gas;
+	return true;
     }
 }
 

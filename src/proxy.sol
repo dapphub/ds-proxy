@@ -92,12 +92,18 @@ contract DSProxyFactory {
     mapping(address=>bool) public isProxy;
     DSProxyCache public cache = new DSProxyCache();
 
-    //deploys a new proxy instance
-    //sets owner of proxy to caller
+    // deploys a new proxy instance
+    // sets owner of proxy to caller
     function build() public returns (DSProxy proxy) {
+        proxy = build(msg.sender);
+    }
+
+    // deploys a new proxy instance
+    // sets custom owner of proxy
+    function build(address owner) public returns (DSProxy proxy) {
         proxy = new DSProxy(cache);
-        Created(msg.sender, address(proxy), address(cache));
-        proxy.setOwner(msg.sender);
+        Created(owner, address(proxy), address(cache));
+        proxy.setOwner(owner);
         isProxy[proxy] = true;
     }
 }

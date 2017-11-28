@@ -61,9 +61,33 @@ contract DSProxyTest is DSTest {
 		//verify logging doesnt return false positives
 		address notProxy = 0xd2A49A27F3E68d9ab1973849eaA0BEC41A6592Ed;
 		assertTrue(!factory.isProxy(notProxy));
+
+		//verify proxy ownership
+		assertEq(proxy.owner(), this);
 	}
 
-	///test 3 - verify getting a cache
+	///test 3 - build a proxy from DSProxyFactory (other owner) and verify logging
+	function test_DSProxyFactoryBuildProcOtherOwner() public {
+		address owner = address(0x123);
+		address proxyAddr = factory.build(owner);
+		assertTrue(proxyAddr > 0x0);
+		proxy = DSProxy(proxyAddr);
+
+		uint codeSize;
+		assembly {
+			codeSize := extcodesize(proxyAddr)
+		}
+		//verify proxy was deployed successfully
+		assertTrue(codeSize > 0);
+
+		//verify proxy creation was logged
+		assertTrue(factory.isProxy(proxyAddr));
+
+		//verify proxy ownership
+		assertEq(proxy.owner(), owner);
+	}
+
+	///test 4 - verify getting a cache
 	function test_DSProxyCacheAddr1() public {
 		DSProxy p = new DSProxy(cache);
 		assertTrue(address(p) > 0x0);
@@ -72,7 +96,7 @@ contract DSProxyTest is DSTest {
 		assertTrue(cacheAddr != 0x0);
 	}
 
-	///test 4 - verify setting a new cache
+	///test 5 - verify setting a new cache
 	function test_DSProxyCacheAddr2() public {
 		DSProxy p = new DSProxy(cache);
 		assertTrue(address(p) > 0x0);
@@ -95,7 +119,7 @@ contract DSProxyTest is DSTest {
 	}
 	*/
 
-	///test 5 - execute an action through proxy and verify caching
+	///test 6 - execute an action through proxy and verify caching
 	function test_DSProxyExecute() public {
 		//test contract bytecode
 		bytes memory testCode = hex"60606040523415600b57fe5b5b609e8061001a6000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630bcd3b3314603a575bfe5b3415604157fe5b60476065565b60405180826000191660001916815260200191505060405180910390f35b6000600160010290505b905600a165627a7a72305820c0a9ddff06dd48d3745191e58e1c0cb32c940886d299b285a91fdaa5884551560029";
@@ -122,14 +146,14 @@ contract DSProxyTest is DSTest {
  		assertEq(response, bytes32(0x1));
 	}
 
-	///test 6 - deposit ETH to Proxy
+	///test 7 - deposit ETH to Proxy
 	function test_DSProxyDepositETH() public {
 		assertEq(proxy.balance, 0);
 		assert(proxy.call.value(10)());
 		assertEq(proxy.balance, 10);
 	}
 
-	///test 7 - withdraw ETH from Proxy
+	///test 8 - withdraw ETH from Proxy
 	function test_DSProxyWithdrawETH() public {
 		assert(proxy.call.value(10)());
 		assertEq(proxy.balance, 10);

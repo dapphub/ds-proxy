@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.23;
 
 import "ds-test/test.sol";
 import "./proxy.sol";
@@ -131,7 +131,8 @@ contract DSProxyTest is DSTest {
 		assertEq(cache.read(testCode), 0x0);
 
 		//deploy and call the contracts code
-		var (target, response) = proxy.execute(testCode, calldata);
+        address target; bytes32 response;
+		(target, response) = proxy.execute(testCode, calldata);
 
 		//verify we got correct response
 		assertEq(response, bytes32(0x1));
@@ -148,21 +149,21 @@ contract DSProxyTest is DSTest {
 
 	///test 7 - deposit ETH to Proxy
 	function test_DSProxyDepositETH() public {
-		assertEq(proxy.balance, 0);
-		assert(proxy.call.value(10)());
-		assertEq(proxy.balance, 10);
+		assertEq(address(proxy).balance, 0);
+		assertTrue(address(proxy).call.value(10)());
+		assertEq(address(proxy).balance, 10);
 	}
 
 	///test 8 - withdraw ETH from Proxy
 	function test_DSProxyWithdrawETH() public {
-		assert(proxy.call.value(10)());
-		assertEq(proxy.balance, 10);
-		uint256 myBalance = this.balance;
+		assert(address(proxy).call.value(10)());
+		assertEq(address(proxy).balance, 10);
+		uint256 myBalance = address(this).balance;
 		address withdrawFunds = new WithdrawFunds();
 		bytes memory calldata = hex"2e1a7d4d0000000000000000000000000000000000000000000000000000000000000005"; // withdraw(5)
 		proxy.execute(withdrawFunds, calldata);
-		assertEq(proxy.balance, 5);
-		assertEq(this.balance, myBalance + 5);
+		assertEq(address(proxy).balance, 5);
+		assertEq(address(this).balance, myBalance + 5);
 	}
 
 	function() public payable {

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.23;
 
 import "ds-auth/auth.sol";
 import "ds-note/note.sol";
@@ -28,7 +28,7 @@ import "ds-note/note.sol";
 contract DSProxy is DSAuth, DSNote {
     DSProxyCache public cache;  // global cache for contracts
 
-    function DSProxy(address _cacheAddr) public {
+    constructor(address _cacheAddr) public {
         require(setCache(_cacheAddr));
     }
 
@@ -102,7 +102,7 @@ contract DSProxyFactory {
     // sets custom owner of proxy
     function build(address owner) public returns (DSProxy proxy) {
         proxy = new DSProxy(cache);
-        Created(owner, address(proxy), address(cache));
+        emit Created(owner, address(proxy), address(cache));
         proxy.setOwner(owner);
         isProxy[proxy] = true;
     }

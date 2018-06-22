@@ -88,7 +88,7 @@ contract DSProxy is DSAuth, DSNote {
 // This factory deploys new proxy instances through build()
 // Deployed proxy addresses are logged
 contract DSProxyFactory {
-    event Created(address indexed sender, address proxy, address cache);
+    event Created(address indexed sender, address indexed owner, address proxy, address cache);
     mapping(address=>bool) public isProxy;
     DSProxyCache public cache = new DSProxyCache();
 
@@ -102,7 +102,7 @@ contract DSProxyFactory {
     // sets custom owner of proxy
     function build(address owner) public returns (DSProxy proxy) {
         proxy = new DSProxy(cache);
-        emit Created(owner, address(proxy), address(cache));
+        emit Created(msg.sender, owner, address(proxy), address(cache));
         proxy.setOwner(owner);
         isProxy[proxy] = true;
     }

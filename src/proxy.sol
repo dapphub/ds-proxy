@@ -17,8 +17,8 @@
 
 pragma solidity ^0.4.23;
 
-import "ds-auth/auth.sol";
-import "ds-note/note.sol";
+import "../lib/ds-auth/src/auth.sol";
+import "../lib/ds-note/src/note.sol";
 
 // DSProxy
 // Allows code execution using a persistant identity This can be very

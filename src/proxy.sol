@@ -47,10 +47,12 @@ contract DSProxy is DSAuth, DSNote {
             target = cache.write(_code);
         }
 
-        response = execute(target, _data);
+        response = execute2(target, _data);
     }
 
-    function execute(address _target, bytes _data)
+    // TODO: bring back to overloaded function? figure out why the heck
+    //  the abi encoder doesn't like this overloading.
+    function execute2(address _target, bytes _data)
         public
         auth
         note

@@ -39,7 +39,7 @@ contract DSProxy is DSAuth, DSNote {
     function execute(bytes _code, bytes _data)
         public
         payable
-        returns (address target, bytes32 response)
+        returns (address target, bytes response)
     {
         target = cache.read(_code);
         if (target == 0x0) {
@@ -50,19 +50,26 @@ contract DSProxy is DSAuth, DSNote {
         response = execute(target, _data);
     }
 
+
     function execute(address _target, bytes _data)
         public
         auth
         note
         payable
-        returns (bytes32 response)
+        returns (bytes response)
     {
         require(_target != 0x0);
 
         // call contract in current context
         assembly {
-            let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 32)
-            response := mload(0)      // load delegatecall output
+            let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 0)
+            let size := returndatasize
+
+            response := mload(0x40)
+            mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f))))
+            mstore(response, size)
+            returndatacopy(add(response, 0x20), 0, size)
+
             switch iszero(succeeded)
             case 1 {
                 // throw if delegatecall failed

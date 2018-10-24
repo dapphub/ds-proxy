@@ -50,7 +50,6 @@ contract DSProxy is DSAuth, DSNote {
         response = execute(target, _data);
     }
 
-
     function execute(address _target, bytes _data)
         public
         auth
@@ -73,7 +72,7 @@ contract DSProxy is DSAuth, DSNote {
             switch iszero(succeeded)
             case 1 {
                 // throw if delegatecall failed
-                revert(0, 0)
+                revert(response, size)
             }
         }
     }

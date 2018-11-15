@@ -140,8 +140,7 @@ contract DSProxyTest is DSTest {
 
     ///test 6 - execute an action through proxy and verify caching
     function test_DSProxyExecute() public {
-        //function identifier for getBytes32()
-        bytes memory calldata = hex"1f903037";
+        bytes memory calldata = abi.encodeWithSignature("getBytes32()");
 
         //verify contract is not stored in cache
         assertEq(cache.read(testCode), 0x0);
@@ -174,8 +173,7 @@ contract DSProxyTest is DSTest {
 
     ///test 7 - execute an action through proxy which returns more than 1 value
     function test_DSProxyExecute2Values() public {
-        //function identifier for getBytes32AndUint()
-        bytes memory calldata = hex"8583cc0b";
+        bytes memory calldata = abi.encodeWithSignature("getBytes32AndUint()");
 
         //deploy and call the contracts code
         (, bytes memory response) = proxy.execute(testCode, calldata);
@@ -195,8 +193,7 @@ contract DSProxyTest is DSTest {
 
     ///test 8 - execute an action through proxy which returns multiple values in a bytes32[] format
     function test_DSProxyExecuteMultipleValues() public {
-        //function identifier for getMultipleValues(uint256) uint = 10000
-        bytes memory calldata = hex"5f7a3d160000000000000000000000000000000000000000000000000000000000002710";
+        bytes memory calldata = abi.encodeWithSignature("getMultipleValues(uint256)", 10000);
 
         //deploy and call the contracts code
         (, bytes memory response) = proxy.execute(testCode, calldata);
@@ -220,8 +217,7 @@ contract DSProxyTest is DSTest {
 
     ///test 9 - execute an action through proxy which returns a value not multiple of 32
     function test_DSProxyExecuteNot32Multiple() public {
-        //function identifier for get48Bytes()
-        bytes memory calldata = hex"aa4025cc";
+        bytes memory calldata = abi.encodeWithSignature("get48Bytes()");
 
         //deploy and call the contracts code
         (, bytes memory response) = proxy.execute(testCode, calldata);
@@ -236,7 +232,7 @@ contract DSProxyTest is DSTest {
     function test_DSProxyExecuteFailMethod() public {
         address target = proxy;
         address testContract = new TestContract();
-        bytes memory calldata = abi.encodeWithSignature("execute(address,bytes)", bytes32(testContract), hex"a9cc4718"); // fail()
+        bytes memory calldata = abi.encodeWithSignature("execute(address,bytes)", bytes32(testContract), abi.encodeWithSignature("fail()"));
 
         bool succeeded;
         bytes memory response;
@@ -252,6 +248,8 @@ contract DSProxyTest is DSTest {
         }
         assertTrue(!succeeded);
         // logs(response);
+        // logs("Fail test case");
+        // assertTrue(false);
     }
 
     ///test 11 - deposit ETH to Proxy
@@ -267,7 +265,7 @@ contract DSProxyTest is DSTest {
         assertEq(address(proxy).balance, 10);
         uint256 myBalance = address(this).balance;
         address withdrawFunds = new WithdrawFunds();
-        bytes memory calldata = hex"2e1a7d4d0000000000000000000000000000000000000000000000000000000000000005"; // withdraw(5)
+        bytes memory calldata = abi.encodeWithSignature("withdraw(uint256)", 5);
         proxy.execute(withdrawFunds, calldata);
         assertEq(address(proxy).balance, 5);
         assertEq(address(this).balance, myBalance + 5);

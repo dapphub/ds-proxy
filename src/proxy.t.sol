@@ -48,6 +48,16 @@ contract TestContract {
     }
 }
 
+contract TestFullAssemblyContract {
+    function () public {
+        assembly {
+            let message := mload(0x40)
+            mstore(message, "Fail test case")
+            revert(message, 0xe)
+        }
+    }
+}
+
 contract WithdrawFunds {
     function withdraw(uint256 amount) public {
         msg.sender.transfer(amount);
@@ -228,7 +238,7 @@ contract DSProxyTest is DSTest {
         assertEq0(response, test);
     }
 
-    ///test 10 - execute an action through proxy which reverts
+    ///test 10 - execute an action through proxy which reverts via solidity require
     function test_DSProxyExecuteFailMethod() public {
         address target = proxy;
         address testContract = new TestContract();
@@ -265,14 +275,37 @@ contract DSProxyTest is DSTest {
         assertEq0(message, "Fail test case");
     }
 
-    ///test 11 - deposit ETH to Proxy
+    ///test 11 - execute an action through proxy which reverts via a pure assembly function
+    function test_DSProxyExecuteFailMethodAssembly() public {
+        address target = proxy;
+        address testContract = new TestFullAssemblyContract();
+        bytes memory calldata = abi.encodeWithSignature("execute(address,bytes)", bytes32(testContract), hex"");
+
+        bool succeeded;
+        bytes memory response;
+
+        assembly {
+            succeeded := call(sub(gas, 5000), target, 0, add(calldata, 0x20), mload(calldata), 0, 0)
+
+            let size := returndatasize
+
+            response := mload(0x40)
+            mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f))))
+            mstore(response, size)
+            returndatacopy(add(response, 0x20), 0, size)
+        }
+        assertTrue(!succeeded);
+        assertEq0(response, "Fail test case");
+    }
+
+    ///test 12 - deposit ETH to Proxy
     function test_DSProxyDepositETH() public {
         assertEq(address(proxy).balance, 0);
         assertTrue(address(proxy).call.value(10)());
         assertEq(address(proxy).balance, 10);
     }
 
-    ///test 12 - withdraw ETH from Proxy
+    ///test 13 - withdraw ETH from Proxy
     function test_DSProxyWithdrawETH() public {
         assert(address(proxy).call.value(10)());
         assertEq(address(proxy).balance, 10);

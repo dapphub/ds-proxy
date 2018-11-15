@@ -72,7 +72,7 @@ contract DSProxy is DSAuth, DSNote {
             switch iszero(succeeded)
             case 1 {
                 // throw if delegatecall failed
-                revert(response, size)
+                revert(add(response, 0x20), size)
             }
         }
     }

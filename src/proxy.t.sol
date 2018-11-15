@@ -235,21 +235,34 @@ contract DSProxyTest is DSTest {
         bytes memory calldata = abi.encodeWithSignature("execute(address,bytes)", bytes32(testContract), abi.encodeWithSignature("fail()"));
 
         bool succeeded;
-        bytes memory response;
+        bytes memory sig;
+        bytes memory message;
 
         assembly {
             succeeded := call(sub(gas, 5000), target, 0, add(calldata, 0x20), mload(calldata), 0, 0)
+
             let size := returndatasize
 
-            response := mload(0x40)
+            let response := mload(0x40)
             mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f))))
             mstore(response, size)
             returndatacopy(add(response, 0x20), 0, size)
+
+            size := 0x4
+            sig := mload(0x40)
+            mstore(sig, size)
+            mstore(0x40, add(sig, and(add(add(size, 0x20), 0x1f), not(0x1f))))
+            returndatacopy(add(sig, 0x20), 0, size)
+
+            size := mload(add(response, 0x44))
+            message := mload(0x40)
+            mstore(message, size)
+            mstore(0x40, add(message, and(add(add(size, 0x20), 0x1f), not(0x1f))))
+            returndatacopy(add(message, 0x20), 0x44, size)
         }
         assertTrue(!succeeded);
-        // logs(response);
-        // logs("Fail test case");
-        // assertTrue(false);
+        assertEq0(sig, abi.encodeWithSignature("Error(string)"));
+        assertEq0(message, "Fail test case");
     }
 
     ///test 11 - deposit ETH to Proxy

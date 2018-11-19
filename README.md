@@ -26,7 +26,7 @@ to only accept calls coming from the proxy through an ownership model like
 [ds-auth](https://dapp.tools/dappsys/ds-auth.html). In this manner as long as 
 the proxy is not compromised, the internal system is protected from outsider 
 access. Should the owner of the internal calls ever need to be changed, this is 
-as simple as updating the owner of `ds-proxy` rather than manualy updating each 
+as simple as updating the owner of `ds-proxy` rather than manually updating each 
 individual internal function call, making it much more secure and adaptable.
 
 #### 2. Execute a sequence of actions atomically

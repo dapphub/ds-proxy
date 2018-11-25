@@ -100,16 +100,16 @@ contract DSProxyFactory {
 
     // deploys a new proxy instance
     // sets owner of proxy to caller
-    function build() public returns (DSProxy proxy) {
+    function build() public returns (address proxy) {
         proxy = build(msg.sender);
     }
 
     // deploys a new proxy instance
     // sets custom owner of proxy
-    function build(address owner) public returns (DSProxy proxy) {
+    function build(address owner) public returns (address proxy) {
         proxy = new DSProxy(cache);
         emit Created(msg.sender, owner, address(proxy), address(cache));
-        proxy.setOwner(owner);
+        DSProxy(proxy).setOwner(owner);
         isProxy[proxy] = true;
     }
 }

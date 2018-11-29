@@ -96,7 +96,11 @@ contract DSProxy is DSAuth, DSNote {
 contract DSProxyFactory {
     event Created(address indexed sender, address indexed owner, address proxy, address cache);
     mapping(address=>bool) public isProxy;
-    DSProxyCache public cache = new DSProxyCache();
+    DSProxyCache public cache;
+
+    constructor() public {
+        cache = new DSProxyCache();
+    }
 
     // deploys a new proxy instance
     // sets owner of proxy to caller

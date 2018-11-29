@@ -29,7 +29,7 @@ contract DSProxy is DSAuth, DSNote {
     DSProxyCache public cache;  // global cache for contracts
 
     constructor(address _cacheAddr) public {
-        require(setCache(_cacheAddr), "");
+        setCache(_cacheAddr);
     }
 
     function() external payable {
@@ -57,7 +57,7 @@ contract DSProxy is DSAuth, DSNote {
         payable
         returns (bytes memory response)
     {
-        require(_target != address(0), "Target address is necessary");
+        require(_target != address(0), "ds-proxy-target-address-required");
 
         // call contract in current context
         assembly {
@@ -84,7 +84,7 @@ contract DSProxy is DSAuth, DSNote {
         note
         returns (bool)
     {
-        require(_cacheAddr != address(0), "Invalid cache address");
+        require(_cacheAddr != address(0), "ds-proxy-cache-address-required");
         cache = DSProxyCache(_cacheAddr);  // overwrite cache
         return true;
     }

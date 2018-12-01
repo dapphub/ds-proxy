@@ -79,13 +79,13 @@ contract DSProxyTest is DSTest {
 
     ///test1 - check that DSProxyFactory creates a cache
     function test_DSProxyFactoryCheckCache() public {
-        assertTrue(address(factory.cache) > address(0));
+        assertTrue(address(factory.cache) != address(0));
     }
 
     ///test 2 - build a proxy from DSProxyFactory and verify logging
     function test_DSProxyFactoryBuildProc() public {
         address payable proxyAddr = factory.build();
-        assertTrue(proxyAddr > address(0));
+        assertTrue(proxyAddr != address(0));
         proxy = DSProxy(proxyAddr);
 
         uint codeSize;
@@ -93,7 +93,7 @@ contract DSProxyTest is DSTest {
             codeSize := extcodesize(proxyAddr)
         }
         //verify proxy was deployed successfully
-        assertTrue(codeSize > 0);
+        assertTrue(codeSize != 0);
 
         //verify proxy creation was logged
         assertTrue(factory.isProxy(proxyAddr));
@@ -110,7 +110,7 @@ contract DSProxyTest is DSTest {
     function test_DSProxyFactoryBuildProcOtherOwner() public {
         address owner = address(0x123);
         address payable proxyAddr = factory.build(owner);
-        assertTrue(proxyAddr > address(0));
+        assertTrue(proxyAddr != address(0));
         proxy = DSProxy(proxyAddr);
 
         uint codeSize;
@@ -118,7 +118,7 @@ contract DSProxyTest is DSTest {
             codeSize := extcodesize(proxyAddr)
         }
         //verify proxy was deployed successfully
-        assertTrue(codeSize > 0);
+        assertTrue(codeSize != 0);
 
         //verify proxy creation was logged
         assertTrue(factory.isProxy(proxyAddr));
@@ -130,7 +130,7 @@ contract DSProxyTest is DSTest {
     ///test 4 - verify getting a cache
     function test_DSProxyCacheAddr1() public {
         DSProxy p = new DSProxy(address(cache));
-        assertTrue(address(p) > address(0));
+        assertTrue(address(p) != address(0));
         address cacheAddr = address(p.cache());
         assertTrue(cacheAddr == address(cache));
         assertTrue(cacheAddr != address(0));
@@ -139,7 +139,7 @@ contract DSProxyTest is DSTest {
     ///test 5 - verify setting a new cache
     function test_DSProxyCacheAddr2() public {
         DSProxy p = new DSProxy(address(cache));
-        assertTrue(address(p) > address(0));
+        assertTrue(address(p) != address(0));
         address newCacheAddr = address(new DSProxyCache());
         address oldCacheAddr = address(cache);
         assertEq(address(p.cache()), oldCacheAddr);

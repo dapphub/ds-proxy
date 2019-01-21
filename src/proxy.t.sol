@@ -319,6 +319,19 @@ contract DSProxyTest is DSTest {
         assertEq(address(this).balance, myBalance + 5);
     }
 
+    ///test 14 - check failure when an address without code is used as target
+    function testFail_executeNonContract() public {
+        bytes memory data = abi.encodeWithSignature("test()");
+        proxy.execute(address(0x1), data);
+    }
+
+    ///test 15 - check failure when a non existing function is called
+    function testFail_executeNonFunction() public {
+        address testContract = address(new TestContract());
+        bytes memory data = abi.encodeWithSignature("nonExistingFunction()");
+        proxy.execute(testContract, data);
+    }
+
     function() external payable {
     }
 }

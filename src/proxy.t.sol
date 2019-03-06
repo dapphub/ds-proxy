@@ -103,7 +103,7 @@ contract DSProxyTest is DSTest {
         assertTrue(!factory.isProxy(notProxy));
 
         //verify proxy ownership
-        assertEq(proxy.owner(), address(this));
+        assertEq(proxy.wards(address(this)), 1);
     }
 
     ///test 3 - build a proxy from DSProxyFactory (other owner) and verify logging
@@ -124,7 +124,7 @@ contract DSProxyTest is DSTest {
         assertTrue(factory.isProxy(proxyAddr));
 
         //verify proxy ownership
-        assertEq(proxy.owner(), owner);
+        assertEq(proxy.wards(owner), 1);
     }
 
     ///test 4 - verify getting a cache

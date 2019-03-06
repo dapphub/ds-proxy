@@ -17,7 +17,6 @@
 
 pragma solidity >=0.5.0 <0.6.0;
 
-import "ds-auth/auth.sol";
 import "ds-note/note.sol";
 
 // DSProxy
@@ -25,10 +24,17 @@ import "ds-note/note.sol";
 // useful to execute a sequence of atomic actions. Since the owner of
 // the proxy can be changed, this allows for dynamic ownership models
 // i.e. a multisig
-contract DSProxy is DSAuth, DSNote {
+contract DSProxy is DSNote {
+    // --- Auth ---
+    mapping (address => uint) public wards;
+    function rely(address guy) public note auth { wards[guy] = 1; }
+    function deny(address guy) public note auth { wards[guy] = 0; }
+    modifier auth { require(wards[msg.sender] == 1); _; }
+
     DSProxyCache public cache;  // global cache for contracts
 
     constructor(address _cacheAddr) public {
+        wards[msg.sender] = 1;
         setCache(_cacheAddr);
     }
 
@@ -113,7 +119,8 @@ contract DSProxyFactory {
     function build(address owner) public returns (address payable proxy) {
         proxy = address(new DSProxy(address(cache)));
         emit Created(msg.sender, owner, address(proxy), address(cache));
-        DSProxy(proxy).setOwner(owner);
+        DSProxy(proxy).rely(owner);
+        DSProxy(proxy).deny(address(this));
         isProxy[proxy] = true;
     }
 }

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity >=0.5.0 <0.6.0;
+pragma solidity >=0.6.0;
 
 import "ds-test/test.sol";
 import "./proxy.sol";
@@ -49,7 +49,7 @@ contract TestContract {
 }
 
 contract TestFullAssemblyContract {
-    function() external {
+    fallback() payable external {
         assembly {
             let message := mload(0x40)
             mstore(message, "Fail test case")
@@ -79,7 +79,7 @@ contract DSProxyTest is DSTest {
 
     ///test1 - check that DSProxyFactory creates a cache
     function test_DSProxyFactoryCheckCache() public {
-        assertTrue(address(factory.cache) != address(0));
+        assertTrue(address(factory.cache()) != address(0));
     }
 
     ///test 2 - build a proxy from DSProxyFactory and verify logging
@@ -249,9 +249,9 @@ contract DSProxyTest is DSTest {
         bytes memory message;
 
         assembly {
-            succeeded := call(sub(gas, 5000), target, 0, add(data, 0x20), mload(data), 0, 0)
+           succeeded := call(sub(gas(), 5000), target, 0, add(data, 0x20), mload(data), 0, 0)
 
-            let size := returndatasize
+            let size := returndatasize()
 
             let response := mload(0x40)
             mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f))))
@@ -285,9 +285,9 @@ contract DSProxyTest is DSTest {
         bytes memory response;
 
         assembly {
-            succeeded := call(sub(gas, 5000), target, 0, add(data, 0x20), mload(data), 0, 0)
+            succeeded := call(sub(gas(), 5000), target, 0, add(data, 0x20), mload(data), 0, 0)
 
-            let size := returndatasize
+            let size := returndatasize()
 
             response := mload(0x40)
             mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f))))
@@ -319,6 +319,6 @@ contract DSProxyTest is DSTest {
         assertEq(address(this).balance, myBalance + 5);
     }
 
-    function() external payable {
+    fallback() external payable {
     }
 }

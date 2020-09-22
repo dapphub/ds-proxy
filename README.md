@@ -55,7 +55,7 @@ and [seth](https://dapp.tools/seth/)
 
 3. Create a contract and compile using solc.    
 
-   `dapp build MyCustomContract`    
+   `dapp build`    
 
 3. Get the calldata for the function and arguments you want to execute     
 

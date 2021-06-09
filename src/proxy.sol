@@ -32,7 +32,7 @@ contract DSProxy is DSAuth, DSNote {
         setCache(_cacheAddr);
     }
 
-    fallback() external payable {
+    receive() external payable {
     }
     // use the proxy to execute calldata _data on contract _code
     function execute(bytes memory _code, bytes memory _data)

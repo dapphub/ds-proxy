@@ -301,14 +301,14 @@ contract DSProxyTest is DSTest {
     ///test 12 - deposit ETH to Proxy
     function test_DSProxyDepositETH() public {
         assertEq(address(proxy).balance, 0);
-        (bool success,) = address(proxy).call.value(10)("");
+        (bool success,) = address(proxy).call{value: 10}("");
         assertTrue(success);
         assertEq(address(proxy).balance, 10);
     }
 
     ///test 13 - withdraw ETH from Proxy
     function test_DSProxyWithdrawETH() public {
-        (bool success,) = address(proxy).call.value(10)("");
+        (bool success,) = address(proxy).call{value: 10}("");
         assertTrue(success);
         assertEq(address(proxy).balance, 10);
         uint256 myBalance = address(this).balance;
@@ -319,6 +319,6 @@ contract DSProxyTest is DSTest {
         assertEq(address(this).balance, myBalance + 5);
     }
 
-    fallback() external payable {
+    receive() external payable {
     }
 }

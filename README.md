@@ -35,7 +35,7 @@ Due to restrictions in the EVM instruction set such as being unable to be nested
 dynamically sized types and arguments, 1 transaction could be done at a time. 
 Since `ds-proxy` takes in bytecode of a contract, rather than relying on a 
 pre-deployed contract, customized _script_ contracts can be used. These script 
-contracts share a very a important property in that they enable a sequence of 
+contracts share a very important property in that they enable a sequence of 
 actions to be executed atomically (all or nothing). This prevents having to 
 manually rollback writes to contracts when a single transaction fails in a set 
 of transactions.

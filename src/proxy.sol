@@ -58,6 +58,11 @@ contract DSProxy is DSAuth, DSNote {
         returns (bytes memory response)
     {
         require(_target != address(0), "ds-proxy-target-address-required");
+        uint csize;
+        assembly {
+            csize := extcodesize(_target)
+        }
+        require(csize > 0, "ds-proxy-target-invalid-address");
 
         // call contract in current context
         assembly {

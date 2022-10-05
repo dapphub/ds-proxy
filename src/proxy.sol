@@ -17,8 +17,8 @@
 
 pragma solidity >=0.5.0 <0.6.0;
 
-import "ds-auth/auth.sol";
-import "ds-note/note.sol";
+import "ds-auth/auth.sol";0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+import "ds-note/note.sol";0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
 
 // DSProxy
 // Allows code execution using a persistant identity This can be very
@@ -29,7 +29,7 @@ contract DSProxy is DSAuth, DSNote {
     DSProxyCache public cache;  // global cache for contracts
 
     constructor(address _cacheAddr) public {
-        setCache(_cacheAddr);
+        setCache(_cacheAddr);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 
     function() external payable {
@@ -41,13 +41,13 @@ contract DSProxy is DSAuth, DSNote {
         payable
         returns (address target, bytes memory response)
     {
-        target = cache.read(_code);
+        target = cache.read(_code);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
         if (target == address(0)) {
             // deploy contract & store its address in cache
-            target = cache.write(_code);
+            target = cache.write(_code);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
         }
 
-        response = execute(target, _data);
+        response = execute(target, _data);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 
     function execute(address _target, bytes memory _data)
@@ -57,7 +57,7 @@ contract DSProxy is DSAuth, DSNote {
         payable
         returns (bytes memory response)
     {
-        require(_target != address(0), "ds-proxy-target-address-required");
+        require(_target != address(0), "ds-proxy-target-address-required");0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
 
         // call contract in current context
         assembly {
@@ -86,7 +86,7 @@ contract DSProxy is DSAuth, DSNote {
     {
         require(_cacheAddr != address(0), "ds-proxy-cache-address-required");
         cache = DSProxyCache(_cacheAddr);  // overwrite cache
-        return true;
+        return true;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 }
 
@@ -96,25 +96,25 @@ contract DSProxy is DSAuth, DSNote {
 contract DSProxyFactory {
     event Created(address indexed sender, address indexed owner, address proxy, address cache);
     mapping(address=>bool) public isProxy;
-    DSProxyCache public cache;
+    DSProxyCache public cache;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
 
     constructor() public {
-        cache = new DSProxyCache();
+        cache = new DSProxyCache();0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 
     // deploys a new proxy instance
     // sets owner of proxy to caller
     function build() public returns (address payable proxy) {
-        proxy = build(msg.sender);
+        proxy = build(msg.sender);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 
     // deploys a new proxy instance
     // sets custom owner of proxy
     function build(address owner) public returns (address payable proxy) {
-        proxy = address(new DSProxy(address(cache)));
-        emit Created(msg.sender, owner, address(proxy), address(cache));
-        DSProxy(proxy).setOwner(owner);
-        isProxy[proxy] = true;
+        proxy = address(new DSProxy(address(cache)));0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+        emit Created(msg.sender, owner, address(proxy), address(cache));0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+        DSProxy(proxy).setOwner(owner);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+        isProxy[proxy] = true;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 }
 
@@ -128,11 +128,11 @@ contract DSProxyFactory {
 // changed.  The cache uses the sha3 hash of a contract's bytecode to
 // lookup the address
 contract DSProxyCache {
-    mapping(bytes32 => address) cache;
+    mapping(bytes32 => address) cache;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
 
     function read(bytes memory _code) public view returns (address) {
-        bytes32 hash = keccak256(_code);
-        return cache[hash];
+        bytes32 hash = keccak256(_code);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+        return cache[hash];0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 
     function write(bytes memory _code) public returns (address target) {
@@ -144,7 +144,7 @@ contract DSProxyCache {
                 revert(0, 0)
             }
         }
-        bytes32 hash = keccak256(_code);
-        cache[hash] = target;
+        bytes32 hash = keccak256(_code);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+        cache[hash] = target;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
     }
 }
